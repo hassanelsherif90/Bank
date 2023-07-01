@@ -10,7 +10,8 @@ const string FileNameClints = "Clints.txt";
 
 void ShowMainScreen();
 
-struct sClint {
+struct sClint 
+{
 	string AccountNumber;
 	string PinCode;
 	string Name;
