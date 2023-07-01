@@ -234,6 +234,204 @@ void GoToBack()
 	ShowMainScreen();
 }
 
+bool FindClientByAccountNumber(string AccountNumber, vector <sClint> & vClients, sClint & Client)
+{
+	for (sClint C : vClients)
+	{
+		if (C.AccountNumber == AccountNumber)
+		{
+			Client = C;
+			return true;
+		}
+	}
+	return false;
+}
+
+void PrintClientCard(sClint Client)
+{
+	cout << "Account Number  : " << Client.AccountNumber << endl;
+	cout << "Pin Code        : " << Client.PinCode << endl;
+	cout << "Name            : " << Client.Name << endl;
+	cout << "Phone           : " << Client.Phone << endl;
+	cout << "Account Balance : " << Client.AccountBalance << endl;
+}
+
+string ReadAccountNumber()
+{
+	cout << "Enter Account Number : ";
+	string AccountNumber;
+	cin >> AccountNumber;
+	cout << endl;
+	return AccountNumber;
+}
+
+bool MarkForDeleteByAccountNumber(string AccountNumber, vector <sClint>& vClints)
+{
+	for (sClint& C : vClints)
+	{
+		if (C.AccountNumber == AccountNumber)
+		{
+			C.MarkForDelete = true;
+			return true;
+		}
+	}
+	return false;
+}
+
+void SaveToFile(string FileName, vector <sClint> vClients)
+{
+	fstream MyFile;
+	MyFile.open(FileName, ios::out);
+
+	string Line;
+	if (MyFile.is_open())
+	{
+		for (sClint C : vClients)
+		{
+			if (C.MarkForDelete == false)
+			{
+				Line = ConvertRecordToLine(C);
+				MyFile << Line << endl;
+			}
+		}
+		MyFile.close();
+	}
+}
+
+bool DeleteClintByAccountNumber()
+{
+	cout << "\n\n\t\t\tDelete Client \n\n";
+	cout << "-------------------------------------------------------\n\n";
+	cout << "the folowing Client details \n\n";
+	sClint Client;
+	vector <sClint> vClients = LoadFromFileClints(FileNameClints);
+	string AccountNumber = ReadAccountNumber();
+	if (FindClientByAccountNumber(AccountNumber, vClients, Client))
+	{
+		PrintClientCard(Client);
+
+		char Answer = 'Y';
+		cout << "\n\nDo You Want to Delete  Thie Client ? y / n ? ";
+		cin >> Answer;
+		if (Answer == 'y' || Answer == 'Y')
+		{
+			MarkForDeleteByAccountNumber(AccountNumber, vClients);
+			SaveToFile(FileNameClints, vClients);
+
+			//Refresh File
+
+			vClients = LoadFromFileClints(FileNameClints);
+			return true;
+		}
+
+	}
+	else
+	{
+		cout << "\n\nNot Found Clinet !\n\n";
+		return false;
+	}
+}
+
+sClint UpdateClintByAccountNumber(string AccountNumber)
+{
+	sClint Client;
+	Client.AccountNumber = AccountNumber;
+
+	cout << "\nPin Code : ";
+	getline(cin >> ws, Client.PinCode);
+	cout << "\nName : ";
+	getline(cin, Client.Name);
+	cout << "\nPhone : ";
+	getline(cin, Client.Phone);
+	cout << "\nAccount Balance : ";
+	cin >> Client.AccountBalance;
+	return Client;
+}
+
+
+
+bool FindClintByAccountNumber(string AccountNumber, vector <sClint> & vClients, sClint & Client)
+{
+	
+	if (FindClientByAccountNumber(AccountNumber, vClients, Client))
+	{
+		PrintClientCard(Client);
+		return true;
+	}
+	else
+	{
+		cout << "\n\nNot Found Clinet !\n\n";
+		return false;
+	}
+}
+
+bool UpdateClintByAccountNumber(string AccountNumber, vector <sClint>& vClients, sClint& Client)
+{
+
+	if (FindClientByAccountNumber(AccountNumber, vClients, Client))
+	{
+		PrintClientCard(Client);
+
+		char Answer = 'Y';
+		cout << "\n\nDo You Want to Update  Thie Client ? y / n ? ";
+		cin >> Answer;
+		if (Answer == 'y' || Answer == 'Y')
+		{
+			MarkForDeleteByAccountNumber(AccountNumber, vClients);
+
+			for (sClint& C : vClients)
+			{
+				if (AccountNumber == C.AccountNumber)
+				{
+					C = UpdateClintByAccountNumber(AccountNumber);
+					break;
+				}
+			}
+			SaveToFile(FileNameClints, vClients);
+
+			//Refresh File
+
+			vClients = LoadFromFileClints(FileNameClints);
+			return true;
+		}
+
+	}
+	else
+	{
+		cout << "\n\nNot Found Clinet !\n\n";
+		return false;
+	}
+}
+
+void ShowUpdateClintByAccountNumber()
+{
+	cout << "\n\n\t\t\tUpdate Client \n\n";
+	cout << "-------------------------------------------------------\n\n";
+	cout << "the folowing Client details \n\n";
+	sClint Client;
+	vector <sClint> vClients = LoadFromFileClints(FileNameClints);
+	string AccountNumber = ReadAccountNumber();
+	UpdateClintByAccountNumber(AccountNumber, vClients,Client);
+}
+
+void ShowFindClintByAccountNumber()
+{
+	cout << "\n\n\t\t\Find Client \n\n";
+	cout << "-------------------------------------------------------\n\n";
+	cout << "the folowing Client details \n\n";
+	sClint Client;
+	vector <sClint> vClients = LoadFromFileClints(FileNameClints);
+	string AccountNumber = ReadAccountNumber();
+	FindClintByAccountNumber(AccountNumber, vClients, Client);
+}
+
+void ShowEnd()
+{
+	cout << "\n-------------------------------------------\n";
+	cout << "\tEnd Program !\n";
+	cout << "\n-------------------------------------------\n";
+
+}
 
 void PerForMainMenueOptions(enMainMenueOptions MainMenueOptions)
 {
@@ -249,6 +447,27 @@ void PerForMainMenueOptions(enMainMenueOptions MainMenueOptions)
 			AddNewClints();
 			GoToBack();
 			break;
+		case enMainMenueOptions::enDleleteClint:
+			system("cls");
+			DeleteClintByAccountNumber();
+			GoToBack();
+			break;
+		case enMainMenueOptions::enUpdateClint:
+			system("cls");
+			ShowUpdateClintByAccountNumber();
+			GoToBack();
+			break;
+		case enMainMenueOptions::enFindClint :
+			system("cls");
+			ShowFindClintByAccountNumber();
+			GoToBack();
+			break;
+		case enMainMenueOptions::enExit:
+			system("cls");
+			ShowEnd();
+			break;
+
+
 	}
 }
 
