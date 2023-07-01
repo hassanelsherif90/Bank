@@ -9,6 +9,7 @@ using namespace std;
 const string FileNameClints = "Clints.txt";
 
 void ShowMainScreen();
+void ShoTransactionsMenueScreen();
 
 struct sClint 
 {
@@ -214,15 +215,22 @@ void ShowClintsList()
 	}
 }
 
+enum enTransactionsMenueOptions
+{
+	enDeposit = 1, enWithdraw =2,
+	enTotalBalance = 3, enMainMenue = 4
+};
+
 enum enMainMenueOptions { 
 	enShowListClints = 1, enAddNewClints = 2,
 	enDleleteClint = 3, enUpdateClint = 4,
-	enFindClint = 5, enExit = 6
+	enFindClint = 5, enTransactions = 6,
+	enExit = 7
 };
 
 short ReadMainOptions()
 {
-	cout << "\nChoose what do you want to do ? [1 to 6] ? ";
+	cout << "\nChoose what do you want to do ? [1 to 7] ? ";
 	short Choose;
 	cin >> Choose;
 	return Choose;
@@ -250,11 +258,14 @@ bool FindClientByAccountNumber(string AccountNumber, vector <sClint> & vClients,
 
 void PrintClientCard(sClint Client)
 {
+	cout << "the Following are the Client details :\n";
+	cout << "----------------------------------------\n";
 	cout << "Account Number  : " << Client.AccountNumber << endl;
 	cout << "Pin Code        : " << Client.PinCode << endl;
 	cout << "Name            : " << Client.Name << endl;
 	cout << "Phone           : " << Client.Phone << endl;
 	cout << "Account Balance : " << Client.AccountBalance << endl;
+	cout << "----------------------------------------\n";
 }
 
 string ReadAccountNumber()
@@ -329,8 +340,8 @@ bool DeleteClintByAccountNumber()
 	else
 	{
 		cout << "\n\nNot Found Clinet !\n\n";
-		return false;
 	}
+		return false;
 }
 
 sClint UpdateClintByAccountNumber(string AccountNumber)
@@ -348,8 +359,6 @@ sClint UpdateClintByAccountNumber(string AccountNumber)
 	cin >> Client.AccountBalance;
 	return Client;
 }
-
-
 
 bool FindClintByAccountNumber(string AccountNumber, vector <sClint> & vClients, sClint & Client)
 {
@@ -400,8 +409,8 @@ bool UpdateClintByAccountNumber(string AccountNumber, vector <sClint>& vClients,
 	else
 	{
 		cout << "\n\nNot Found Clinet !\n\n";
-		return false;
 	}
+		return false;
 }
 
 void ShowUpdateClintByAccountNumber()
@@ -417,7 +426,7 @@ void ShowUpdateClintByAccountNumber()
 
 void ShowFindClintByAccountNumber()
 {
-	cout << "\n\n\t\t\Find Client \n\n";
+	cout << "\n\n\t\tFind Client \n\n";
 	cout << "-------------------------------------------------------\n\n";
 	cout << "the folowing Client details \n\n";
 	sClint Client;
@@ -431,6 +440,95 @@ void ShowEnd()
 	cout << "\n-------------------------------------------\n";
 	cout << "\tEnd Program !\n";
 	cout << "\n-------------------------------------------\n";
+
+}
+
+void GoToBackTransactions()
+{
+	cout << "\nPress any key to go back to Main Menue .....";
+	system("pause>0");
+	ShoTransactionsMenueScreen();
+}
+
+double ReadDepositAmount()
+{
+	double DepositAmount;
+	cout << "Please Enter Deposit amount ? ";
+	cin >> DepositAmount;
+	return DepositAmount;
+}
+
+vector <sClint> DepositAmountClint(string AccountNumber, vector <sClint> &vClients, double DepositAmount)
+{
+	for (sClint &C : vClients)
+	{
+		if(C.AccountNumber == AccountNumber)
+		{
+			C.AccountBalance = C.AccountBalance + DepositAmount;
+			break;
+		}
+	}
+	return vClients;
+}
+
+void ProccesTransactiosDeposit(string AccountNumber, vector <sClint> &vClients, sClint &Client)
+{
+	if(FindClientByAccountNumber(AccountNumber, vClients, Client))
+	{
+		PrintClientCard(Client);
+		double DepositAmount = ReadDepositAmount();
+
+		cout << "\nAre you sure want perfrom this transaction? y / n ? ";
+		char Answer;
+		cin >> Answer;
+		if(Answer == 'y' || Answer == 'Y')
+		{
+			DepositAmountClint(AccountNumber, vClients, DepositAmount);
+			SaveToFile(FileNameClints, vClients);
+			vClients = LoadFromFileClints(FileNameClints);
+		}
+	}
+	else 
+	{
+		cout << "\nNot Found Client !\n\n";
+	}
+}
+
+void ShowTransactiosDeposit()
+{
+	cout << "\n----------------------------------------------------------\n";
+	cout << "\n\t\t\tDeposit Screen\n";
+	cout << "\n----------------------------------------------------------\n";
+	string AccountNumber = ReadAccountNumber();
+	sClint Client;
+	vector <sClint> vClients = LoadFromFileClints(FileNameClints);
+	ProccesTransactiosDeposit(AccountNumber, vClients, Client);
+}
+
+void PerForTransactionsMenueOptions(enTransactionsMenueOptions TransactionsMenueOption)
+{
+	switch(TransactionsMenueOption)
+	{
+		case enTransactionsMenueOptions::enDeposit:
+			system("cls");
+			ShowTransactiosDeposit();
+			GoToBackTransactions();
+			break;
+
+		case enTransactionsMenueOptions::enWithdraw:
+			system("cls");
+			GoToBackTransactions();
+			break;
+
+		case enTransactionsMenueOptions::enTotalBalance:
+			system("cls");
+			GoToBackTransactions();
+			break;
+
+		case enTransactionsMenueOptions::enMainMenue:
+			ShowMainScreen();
+			break;
+	}
 
 }
 
@@ -463,6 +561,10 @@ void PerForMainMenueOptions(enMainMenueOptions MainMenueOptions)
 			ShowFindClintByAccountNumber();
 			GoToBack();
 			break;
+		case enMainMenueOptions :: enTransactions:
+			system("cls");
+			ShoTransactionsMenueScreen();
+			break;
 		case enMainMenueOptions::enExit:
 			system("cls");
 			ShowEnd();
@@ -470,6 +572,28 @@ void PerForMainMenueOptions(enMainMenueOptions MainMenueOptions)
 
 
 	}
+}
+
+short ReadChoose()
+{
+	cout << "Choose What do You Want to do ? [1 To 4 ] ? ";
+	short ChooseNumber;
+	cin >> ChooseNumber;
+	return ChooseNumber;
+}
+
+void ShoTransactionsMenueScreen()
+{
+	system("cls");
+	cout << "=====================================================";
+	cout << "\n\n\t\tTransActions Menue Screen\n\n";
+	cout << "=====================================================\n\n";
+	cout << "\t[1] Deposit.\n";
+	cout << "\t[2] Withdraw.\n";
+	cout << "\t[3] Total Balannce.\n";
+	cout << "\t[4] Main Menue.\n";
+	cout << "=====================================================\n";
+	PerForTransactionsMenueOptions((enTransactionsMenueOptions) ReadChoose());
 }
 
 void ShowMainScreen()
@@ -485,7 +609,8 @@ void ShowMainScreen()
 	cout << "\t[3] Dlete Clint !\n";
 	cout << "\t[4] Update Clint !\n";
 	cout << "\t[5] Find Clint !\n";
-	cout << "\t[6] Exit !\n";
+	cout << "\t[6] Tansactions !\n";
+	cout << "\t[7] Exit !\n";
 
 	cout << "==================================================";
 	cout << "==================================================\n";
