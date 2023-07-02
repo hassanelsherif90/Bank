@@ -458,6 +458,13 @@ double ReadDepositAmount()
 	return DepositAmount;
 }
 
+double ReadWithDrawAmount()
+{
+	double WithDrawAmount;
+	cin >> WithDrawAmount;
+	return WithDrawAmount;
+}
+
 vector <sClint> DepositAmountClint(string AccountNumber, vector <sClint> &vClients, double DepositAmount)
 {
 	for (sClint &C : vClients)
@@ -465,6 +472,25 @@ vector <sClint> DepositAmountClint(string AccountNumber, vector <sClint> &vClien
 		if(C.AccountNumber == AccountNumber)
 		{
 			C.AccountBalance = C.AccountBalance + DepositAmount;
+			break;
+		}
+	}
+	return vClients;
+}
+
+vector <sClint> WithdrawAmountClint(string AccountNumber, vector <sClint> &vClients, double WithdrawAmount)
+{
+	for (sClint &C : vClients)
+	{
+		if(C.AccountNumber == AccountNumber)
+		{
+			while(WithdrawAmount > C.AccountBalance)
+			{
+				cout << "Exceeds the balance , you can withdraw up to : " << C.AccountBalance <<endl;
+				cout << "Please Enter WithDraw amount ? ";
+				WithdrawAmount = ReadWithDrawAmount();
+			}
+			C.AccountBalance = C.AccountBalance + (WithdrawAmount * -1);
 			break;
 		}
 	}
@@ -494,6 +520,30 @@ void ProccesTransactiosDeposit(string AccountNumber, vector <sClint> &vClients, 
 	}
 }
 
+void ProccesTransactiosWithdraw(string AccountNumber, vector <sClint> &vClients, sClint &Client)
+{
+	if(FindClientByAccountNumber(AccountNumber, vClients, Client))
+	{
+		PrintClientCard(Client);
+		cout << "Please Enter WithDraw amount ? ";
+		double WithDrawAmount = ReadWithDrawAmount();
+
+			WithdrawAmountClint(AccountNumber, vClients, WithDrawAmount);
+		cout << "\nAre you sure want perfrom this transaction? y / n ? ";
+		char Answer;
+		cin >> Answer;
+		if(Answer == 'y' || Answer == 'Y')
+		{
+			SaveToFile(FileNameClints, vClients);
+			vClients = LoadFromFileClints(FileNameClints);
+		}
+	}
+	else 
+	{
+		cout << "\nNot Found Client !\n\n";
+	}
+}
+
 void ShowTransactiosDeposit()
 {
 	cout << "\n----------------------------------------------------------\n";
@@ -503,6 +553,69 @@ void ShowTransactiosDeposit()
 	sClint Client;
 	vector <sClint> vClients = LoadFromFileClints(FileNameClints);
 	ProccesTransactiosDeposit(AccountNumber, vClients, Client);
+}
+
+void ShowTransactioswithdraw()
+{
+	cout << "\n----------------------------------------------------------\n";
+	cout << "\n\t\t\tDeposit Screen\n";
+	cout << "\n----------------------------------------------------------\n";
+	string AccountNumber = ReadAccountNumber();
+	sClint Client;
+	vector <sClint> vClients = LoadFromFileClints(FileNameClints);
+	ProccesTransactiosWithdraw(AccountNumber, vClients, Client);
+}
+
+void PrintClientlBalanc(sClint Client)
+{
+	cout << " | " << setw(20) << left << Client.AccountNumber;
+	cout << " | " << setw(40) << left  << Client.Name;
+	cout << " | " << setw(15) << left << Client.AccountBalance;
+}
+
+void PrintClientsBalanc(vector <sClint> vClients)
+{
+	cout << "\t\t\tBalance List ("<< vClients.size() <<") Client (s)";
+	cout << "\n\n-------------------------------------------------------------------";
+	cout << "------------------------------------------------\n\n";
+	cout << " | " << left << setw(20) << "Account Number";
+	cout << " | " << left << setw(40) << "Client Name ";
+	cout << " | " << left << setw(15) << "Balance ";
+	cout << "\n\n-------------------------------------------------------------------";
+	cout << "------------------------------------------------\n\n";
+
+	if (vClients.size() == 0)
+	{
+		cout << "\n\t\tNot Found Clients !";
+	}
+	else 
+	{
+		for (sClint C: vClients)
+		{
+			PrintClientlBalanc(C);
+			cout << endl;
+		}
+		cout << "\n\n-------------------------------------------------------------------";
+		cout << "------------------------------------------------\n\n";
+	}
+}
+
+void PrintTotalBalanc(vector <sClint> vClients)
+{
+	double Total;
+	for(sClint C : vClients)
+	{
+		Total += C.AccountBalance;
+	}
+	cout << "\t\t\tTotal Balance = " << Total << endl;
+}
+
+void ShowTotalalBalance()
+{
+	vector <sClint> vClients = LoadFromFileClints(FileNameClints);
+	PrintClientsBalanc(vClients);
+	PrintTotalBalanc(vClients);
+
 }
 
 void PerForTransactionsMenueOptions(enTransactionsMenueOptions TransactionsMenueOption)
@@ -517,11 +630,13 @@ void PerForTransactionsMenueOptions(enTransactionsMenueOptions TransactionsMenue
 
 		case enTransactionsMenueOptions::enWithdraw:
 			system("cls");
+			ShowTransactioswithdraw();
 			GoToBackTransactions();
 			break;
 
 		case enTransactionsMenueOptions::enTotalBalance:
 			system("cls");
+			ShowTotalalBalance();
 			GoToBackTransactions();
 			break;
 
